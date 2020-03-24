@@ -27,7 +27,7 @@ GPIO.setup(16, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 def toggle(channel):
      global ON
      if ON:
-	cmd = "ps -ef|grep -w  '/func/code/display/stats.py' | awk 'NR==1 {printf \"%s\", $2}'"
+	cmd = "ps -ef|grep -w  '/rasp-pi-util/src/main/python/display/stats.py' | awk 'NR==1 {printf \"%s\", $2}'"
     	process_id = subprocess.check_output(cmd, shell = True)
         os.system("kill -9 " + str(process_id))
         disp.begin()
@@ -35,7 +35,7 @@ def toggle(channel):
     	disp.display()
 	ON = False
      else :
-	os.system("python /func/code/display/stats.py &")
+	os.system("python /rasp-pi-util/src/main/python/display/stats.py &")
     	ON =  True
 
 GPIO.add_event_detect(16, GPIO.FALLING, callback = toggle, bouncetime = 2000)
