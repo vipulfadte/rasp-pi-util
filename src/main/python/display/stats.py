@@ -39,28 +39,27 @@ while True:
 
     cmd = "hostname -I | cut -d\' \' -f1 | cut -d '.' -f4"
     IP = subprocess.check_output(cmd, shell = True )
-    cmd = "iostat -c | awk 'NR == 4 {printf \"%s%\", 100-$6}'"
-    CPU = subprocess.check_output(cmd, shell = True )
+    cmd = "iostat -cdx 1 2| awk 'NR==11 {printf \"%s%\",$3} NR==14 {printf \"|%s%\", $16} NR== 15 {printf \"|R: %.1fMb W: %.1fMb|%.0f%\", $4/125, $5/125, $16}'"
+    details = subprocess.check_output(cmd, shell = True )
     cmd = "free -m | awk 'NR==2{printf \"MEM: %.2f/%.2fGB|%.0f%%\", $3/1024,$2/1024,$3*100/$2 }'"
     MemUsage = subprocess.check_output(cmd, shell = True )
-    cmd = "df -h | awk '$NF==\"/\"{printf \"SYSDSK: %d/%dGB|%s\", $3,$2,$5}'"
+    cmd = "df -h | awk '$NF==\"/\"{printf \"SYSDSK: %d/%dGB\", $3,$2}'"
     Disk = subprocess.check_output(cmd, shell = True )
     cmd = "df -h | grep sda1 | awk '/sda1/{printf \"NAS: %s/%sXB\", $3,$2}'|tr -d G|tr X G"
     Space = subprocess.check_output(cmd, shell = True )
     cmd = "vcgencmd measure_temp | cut -d '=' -f2"
     Temp = subprocess.check_output(cmd, shell = True )
-    cmd = "iostat -dx /dev/sda1 1 2 |awk 'NR==7 {print}'|awk '/sda1/{printf \"%.0f%%\", $16}'"
-    Usg = subprocess.check_output(cmd, shell =True)
-    cmd = "iostat -dx /dev/sda1 1 2 |awk 'NR ==7 {print}'|awk '/sda1/{printf \"R: %.1fMb W: %.1fMb\", $4/125 , $5/125}'"
-    RW = subprocess.check_output(cmd, shell=True)
+
+    dr = str(details).split('|');
+    #CPU: 1.25%|MMCU: 0.00%|R: 0.0Mb W: 0.0Mb|Usg:0%
 
     draw.text((x, top),      "***STATS*** Node:" + str(IP), font=font, fill=255)
     draw.text((x, top+8),    "---------------------", font=font, fill=255)
-    draw.text((x, top+15),   "CPU:" + str(CPU) + "|" + str(Temp), font=font, fill=255)
+    draw.text((x, top+15),   "CPU:" + dr[0] + "|" + str(Temp), font=font, fill=255)
     draw.text((x, top+25),   str(MemUsage),  font=font, fill=255)
-    draw.text((x, top+35),   str(Disk),  font=font, fill=255)
-    draw.text((x, top+45),   str(Space) + "|" + str(Usg) , font=font, fill=255)
-    draw.text((x, top+55),   str(RW), font=font, fill=255)
+    draw.text((x, top+35),   str(Disk) + "|" + dr[1],  font=font, fill=255)
+    draw.text((x, top+45),   str(Space) + "|" + dr[3] , font=font, fill=255)
+    draw.text((x, top+55),   dr[2], font=font, fill=255)
 
     disp.clear()
     disp.image(image)
